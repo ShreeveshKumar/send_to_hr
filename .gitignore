@@ -1,0 +1,5 @@
+.env
+__pycache__
+
+read_channels.py
+generate_session.py

@@ -1,0 +1,73 @@
+name: Tele-Bot CI/CD
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  schedule:
+    - cron: '0 9 * * *' # Run at 9 AM UTC daily
+  workflow_dispatch:
+
+jobs:
+  run-job:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      API_ID: ${{ secrets.API_ID }}
+      API_HASH: ${{ secrets.API_HASH }}
+      SESSION_STRING: ${{ secrets.SESSION_STRING }}
+      CHANNEL_NAMES: ${{ secrets.CHANNEL_NAMES }}
+      ROLE_KEYWORD: ${{ secrets.ROLE_KEYWORD }}
+      NAME: ${{ secrets.NAME }}
+      LINKS: ${{ secrets.LINKS }}
+      BOT_KEY: ${{ secrets.BOT_KEY }}
+      SCRAPE_LINKS: ${{ secrets.SCRAPE_LINKS }}
+      MY_EMAIL: ${{ secrets.MY_EMAIL }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_USER: ${{ secrets.DATABASE_USER }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      RESUME_LINK: ${{ secrets.RESUME_LINK }}
+      RUN_ONCE: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction
+          
+      - name: Lint with flake8
+        run: |
+          poetry run pip install flake8
+          poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Create progress file
+        run: |
+          # Create progress.txt formatted as ISO8601,Count
+          # Example: 2026-02-08T00:00:00,0
+          TODAY=$(date -u +"%Y-%m-%dT00:00:00")
+          echo "${TODAY},0" > progress.txt
+          cat progress.txt # Verify content
+          
+      - name: Run Job Worker
+        run: |
+          poetry run python job_worker.py
+
+      - name: Upload progress file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: progress-report
+          path: progress.txt
+
+

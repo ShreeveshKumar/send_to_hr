@@ -1,0 +1,26 @@
+[project]
+name = "tele-bot"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "shreevesh",email = "shreeveshkr@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+
+    "requests>=2.31.0",
+    "tavily-python>=0.3.0",
+    "pymongo>=4.6.0",
+    "telethon>=1.30.0",
+    "python-dotenv (>=1.2.1,<2.0.0)",
+]
+
+
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
